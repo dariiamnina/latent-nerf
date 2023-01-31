@@ -7,6 +7,7 @@ import numpy as np
 from skimage.measure import marching_cubes
 
 DELTA = 0.2
+#shape_path = '../shapenet_samples/shapenet_dim32_df/02691156/10155655850468db78d106ce0a280f87__0__.df'
 shape_path = '../shapenet_samples/shapenet_dim32_df/02691156/10155655850468db78d106ce0a280f87__0__.df'
 
 shape = np.fromfile(shape_path, dtype=np.uint64, offset=0, count=3)
@@ -35,5 +36,7 @@ def normalize_mesh(v, target_scale=0.5):
     return verts
 
 normalized_vertices = normalize_mesh(mesh.vertices, 0.7)
-#normalized_verices, mesh.faces
+from visualization import visualize_mesh
+
+visualize_mesh(normalized_vertices, mesh.faces)
 
