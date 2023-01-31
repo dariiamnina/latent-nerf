@@ -19,7 +19,9 @@ class GuideConfig:
     # A huggingface diffusion model to use
     diffusion_name: str = 'CompVis/stable-diffusion-v1-4'
     # Guiding mesh
-    shape_path: Optional[str] = None
+    shape_path1: Optional[str] = None
+    # Guiding mesh
+    shape_path2: Optional[str] = None
     # Scale of mesh in 1x1x1 cube
     mesh_scale: float = 0.7
     # Define the proximal distance allowed
