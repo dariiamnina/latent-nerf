@@ -130,6 +130,8 @@ class Trainer:
 
         pbar = tqdm(total=self.cfg.optim.iters, initial=self.train_step,
                     bar_format='{desc}: {percentage:3.0f}% training step {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
+        ###
+        shape_loss_weight = 1
         while self.train_step < self.cfg.optim.iters:
             # Keep going over dataloader until finished the required number of iterations
             for data in self.dataloaders['train']:
@@ -143,7 +145,11 @@ class Trainer:
                 self.optimizer.zero_grad()
 
                 with torch.cuda.amp.autocast(enabled=self.cfg.optim.fp16):
-                    pred_rgbs, pred_ws, loss = self.train_render(data)
+                    ####
+                    if self.train_step >= 100 and self.train_step % 100 == 0:
+                        shape_loss_weight = self.train_step / 10
+                    ###
+                    pred_rgbs, pred_ws, loss = self.train_render(data, shape_loss_weight)
 
                 self.scaler.scale(loss).backward()
                 self.scaler.step(self.optimizer)
@@ -206,7 +212,7 @@ class Trainer:
     def full_eval(self):
         self.evaluate(self.dataloaders['val_large'], self.final_renders_path, save_as_video=True)
 
-    def train_render(self, data: Dict[str, Any]):
+    def train_render(self, data: Dict[str, Any], shape_loss_weight=1):
         rays_o, rays_d = data['rays_o'], data['rays_d']  # [B, N, 3]
 
         B, N = rays_o.shape[:2]
@@ -242,7 +248,8 @@ class Trainer:
 
         # Shape loss
         if 'shape_loss' in self.losses:
-            loss += self.cfg.optim.lambda_shape * self.losses['shape_loss'](outputs['xyzs'], outputs['sigmas'])
+            ###loss += self.cfg.optim.lambda_shape * self.losses['shape_loss'](outputs['xyzs'], outputs['sigmas'])
+            loss += shape_loss_weight * self.cfg.optim.lambda_shape * self.losses['shape_loss'](outputs['xyzs'], outputs['sigmas'])
 
         return pred_rgb, pred_ws, loss
 
